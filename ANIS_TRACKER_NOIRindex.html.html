@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANIS — Tracker 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #070d1a;
+  --bg2: #0c1525;
+  --bg3: #111e36;
+  --blue: #1d6ce8;
+  --blue-l: #4d9fff;
+  --blue-dim: #0f2a5a;
+  --gold: #f0a500;
+  --gold-dim: #7a5200;
+  --green: #00c48c;
+  --red: #e84040;
+  --white: #eef2ff;
+  --gray: #7a8aaa;
+  --border: rgba(29,108,232,0.18);
+  --card: #0c1525;
+}
+*{margin:0;padding:0;box-sizing:border-box;color-scheme:dark}
+html{scroll-behavior:smooth;background:#070d1a}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── NOISE ── */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.35}
+
+/* ── HEADER ── */
+header{background:rgba(7,13,26,.97);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:200;backdrop-filter:blur(16px)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:6px;background:linear-gradient(135deg,var(--white),var(--blue-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-right{display:flex;align-items:center;gap:20px}
+.streak-badge{display:flex;align-items:center;gap:6px;background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.3);border-radius:20px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)}
+.today-btn{background:var(--blue);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;transition:.2s}
+.today-btn:hover{background:#2a7fff}
+
+/* ── NAV ── */
+nav{background:rgba(7,13,26,.95);border-bottom:1px solid var(--border);display:flex;padding:0 32px;overflow-x:auto;backdrop-filter:blur(12px)}
+.nav-tab{padding:14px 20px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gray);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.2s;font-family:'JetBrains Mono',monospace}
+.nav-tab:hover{color:var(--white)}
+.nav-tab.active{color:var(--blue-l);border-bottom-color:var(--blue)}
+
+/* ── LAYOUT ── */
+main{max-width:1300px;margin:0 auto;padding:32px}
+.view{display:none;animation:fadeUp .3s ease}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TYPOGRAPHY ── */
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:4px;color:var(--white);margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--gray);margin-bottom:28px;line-height:1.6}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gray);text-transform:uppercase;margin-bottom:16px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),transparent)}
+.card.gold::before{background:linear-gradient(90deg,var(--gold),transparent)}
+.card.green::before{background:linear-gradient(90deg,var(--green),transparent)}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+
+/* ── STAT PILL ── */
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--blue-l);line-height:1}
+.stat-val.gold{color:var(--gold)}
+.stat-val.green{color:var(--green)}
+.stat-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-family:'JetBrains Mono',monospace}
+
+/* ─────────────────────────────────────────────────
+   TODAY TRACKER
+───────────────────────────────────────────────── */
+.today-layout{display:grid;grid-template-columns:1fr 340px;gap:24px}
+
+/* Score ring */
+.score-panel{display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px}
+.ring-wrap{position:relative;width:180px;height:180px}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:#0f2240;stroke-width:10}
+.ring-fill{fill:none;stroke:var(--blue-l);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-family:'Bebas Neue',sans-serif;font-size:58px;line-height:1;color:var(--white)}
+.ring-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue-l);letter-spacing:2px}
+.score-grade{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--gray)}
+.score-msg{font-size:13px;color:var(--gray);text-align:center;line-height:1.6;max-width:220px;font-style:italic}
+
+/* Habit cards */
+.habit-list{display:flex;flex-direction:column;gap:10px}
+.habit-item{background:var(--bg3);border:1px solid #1a2a4a;border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s;user-select:none;position:relative;overflow:hidden}
+.habit-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#1a2a4a;transition:.2s}
+.habit-item:hover{background:#131e35;border-color:#253a6a}
+.habit-item.done{border-color:rgba(29,108,232,.35);background:rgba(29,108,232,.06)}
+.habit-item.done::before{background:var(--blue)}
+.hcheck{width:26px;height:26px;border:2px solid #253a6a;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;transition:.2s}
+.habit-item.done .hcheck{background:var(--blue);border-color:var(--blue);color:#fff}
+.hicon{font-size:22px;flex-shrink:0}
+.hinfo{flex:1}
+.hname{font-weight:600;font-size:14px}
+.hsub{font-size:11px;color:var(--gray);margin-top:2px}
+.hpoints{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue-l);font-weight:700}
+
+.save-day-btn{width:100%;margin-top:16px;padding:16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:4px;cursor:pointer;transition:.2s}
+.save-day-btn:hover{background:#2a7fff;transform:translateY(-2px)}
+
+/* Notes */
+.notes-area{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;min-height:90px;outline:none;margin-top:12px}
+.notes-area:focus{border-color:var(--blue)}
+
+/* ─────────────────────────────────────────────────
+   CALENDAR (MONTH)
+───────────────────────────────────────────────── */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.cal-nav{display:flex;align-items:center;gap:12px}
+.cal-nav-btn{background:var(--card);border:1px solid var(--border);color:var(--white);width:36px;height:36px;border-radius:6px;cursor:pointer;font-size:16px;transition:.2s;display:flex;align-items:center;justify-content:center}
+.cal-nav-btn:hover{background:var(--bg3);border-color:var(--blue)}
+.cal-month-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:28px}
+.cal-dow{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gray);letter-spacing:2px;padding:8px 0;text-transform:uppercase}
+.cal-day{min-height:70px;background:var(--card);border:1px solid #0f1e38;border-radius:8px;padding:10px 8px;display:flex;flex-direction:column;gap:4px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.cal-day:hover{border-color:var(--blue);background:var(--bg3)}
+.cal-day.today{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.cal-day.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+.cal-day.future{opacity:.35;pointer-events:none}
+.cal-day-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray)}
+.cal-day-score{font-family:'Bebas Neue',sans-serif;font-size:24px;line-height:1}
+.cal-day-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+.cdot{width:5px;height:5px;border-radius:50%;background:#1a2a4a}
+.cdot.done{background:var(--blue)}
+.cal-score-glow{position:absolute;inset:0;opacity:.08;pointer-events:none}
+
+/* Month stats */
+.month-stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+
+/* ─────────────────────────────────────────────────
+   YEAR VIEW (HEATMAP)
+───────────────────────────────────────────────── */
+.year-section{margin-bottom:40px}
+.heatmap-wrap{overflow-x:auto;padding-bottom:8px}
+.heatmap{display:inline-grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;gap:3px;min-width:max-content}
+.hm-cell{width:14px;height:14px;border-radius:3px;background:#0c1830;cursor:pointer;transition:transform .1s}
+.hm-cell:hover{transform:scale(1.5);z-index:10;position:relative}
+.hm-month-labels{display:flex;margin-bottom:6px;min-width:max-content}
+.hm-month-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gray);letter-spacing:1px;text-transform:uppercase}
+.hm-day-labels{display:grid;grid-template-rows:repeat(7,14px);gap:3px;margin-right:8px;flex-shrink:0}
+.hm-day-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gray);display:flex;align-items:center}
+
+.year-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+
+/* ─────────────────────────────────────────────────
+   WEEKLY VIEW
+───────────────────────────────────────────────── */
+.week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:28px}
+.week-day-card{background:#0c1525;border:1px solid var(--border);border-radius:10px;padding:16px 12px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.week-day-card:hover{border-color:var(--blue)}
+.week-day-card.today-card{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.wdc-name{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);margin-bottom:8px;text-transform:uppercase}
+.wdc-score{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;margin-bottom:6px}
+.wdc-bar{height:4px;background:#0f1e38;border-radius:2px;overflow:hidden;margin-bottom:8px}
+.wdc-bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.wdc-dots{display:flex;justify-content:center;gap:3px;flex-wrap:wrap}
+
+.week-habit-breakdown{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:28px}
+.whb-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center}
+.whb-icon{font-size:22px;margin-bottom:6px}
+.whb-name{font-size:10px;color:var(--gray);margin-bottom:8px;line-height:1.3}
+.whb-rate{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--white);margin-bottom:6px}
+.whb-bar{height:4px;background:#0f1e38;border-radius:2px;overflow:hidden}
+.whb-fill{height:100%;border-radius:2px;background:var(--blue)}
+
+/* ─────────────────────────────────────────────────
+   BILANS
+───────────────────────────────────────────────── */
+.bilan-period-nav{display:flex;gap:8px;margin-bottom:24px}
+.bpn-btn{padding:8px 18px;border-radius:6px;border:1px solid var(--border);background:#0c1525;color:var(--gray);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.2s;font-family:'JetBrains Mono',monospace}
+.bpn-btn:hover{border-color:var(--blue);color:var(--white)}
+.bpn-btn.active{background:rgba(29,108,232,.15);border-color:var(--blue);color:var(--blue-l)}
+
+.bilan-section{display:none}
+.bilan-section.active{display:block;animation:fadeUp .2s ease}
+
+/* ─────────────────────────────────────────────────
+   NUTRITION TABLE
+───────────────────────────────────────────────── */
+.nutri-filter{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.nutri-btn{padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:#0c1525;color:var(--gray);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.nutri-btn:hover{border-color:var(--blue);color:var(--white)}
+.nutri-btn.active{background:rgba(29,108,232,.15);border-color:var(--blue);color:var(--blue-l)}
+
+.nutri-search{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--white);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;width:100%;margin-bottom:16px;transition:.2s}
+.nutri-search:focus{border-color:var(--blue)}
+
+table{width:100%;border-collapse:collapse;background:transparent}
+thead{position:sticky;top:0;z-index:10}tbody{background:#0c1525}
+th{background:var(--blue-dim);color:var(--blue-l);padding:12px 14px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(29,108,232,.08);vertical-align:middle;background:#0c1525;color:#eef2ff}
+tr:hover td{background:#111e36!important}
+.nutri-icon{font-size:18px}
+.macro-pill{display:inline-block;padding:2px 8px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+.pill-p{background:rgba(29,108,232,.2);color:var(--blue-l)}
+.pill-c{background:rgba(240,165,0,.2);color:var(--gold)}
+.pill-f{background:rgba(0,196,140,.2);color:var(--green)}
+.pill-k{background:rgba(255,255,255,.08);color:var(--gray)}
+
+/* ─────────────────────────────────────────────────
+   MODAL
+───────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:.25s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:#0d1828;border:1px solid var(--border);border-radius:14px;padding:28px;width:480px;max-width:92vw;transform:translateY(20px);transition:.3s;max-height:90vh;overflow-y:auto}
+.modal-bg.open .modal{transform:translateY(0)}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;margin-bottom:4px}
+.modal-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray);letter-spacing:2px;margin-bottom:20px;text-transform:uppercase}
+.modal-habits{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.m-habit{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border-radius:6px;cursor:pointer;transition:.15s;border:1px solid transparent}
+.m-habit:hover{background:#131e35}
+.m-habit.done{background:rgba(29,108,232,.08);border-color:rgba(29,108,232,.25)}
+.m-check{width:22px;height:22px;border:2px solid #253a6a;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:.2s}
+.m-habit.done .m-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.modal-actions{display:flex;gap:10px}
+.m-btn{flex:1;padding:12px;border-radius:6px;border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;cursor:pointer;transition:.2s}
+.m-btn-save{background:var(--blue);color:#fff}
+.m-btn-save:hover{background:#2a7fff}
+.m-btn-cancel{background:var(--bg3);color:var(--gray);border:1px solid #1a2a4a}
+.m-btn-cancel:hover{color:var(--white)}
+.modal-notes{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;resize:none;height:70px;outline:none;margin-bottom:14px}
+.modal-notes:focus{border-color:var(--blue)}
+
+/* ─────────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────────── */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--blue);color:#fff;padding:12px 22px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;z-index:1000;transform:translateY(80px);transition:.3s;box-shadow:0 8px 32px rgba(29,108,232,.4)}
+.toast.show{transform:translateY(0)}
+
+/* ─────────────────────────────────────────────────
+   CALLOUT
+───────────────────────────────────────────────── */
+.callout{background:rgba(29,108,232,.07);border:1px solid rgba(29,108,232,.2);border-radius:8px;padding:14px 18px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6}
+.callout.gold{background:rgba(240,165,0,.07);border-color:rgba(240,165,0,.2)}
+.callout.green{background:rgba(0,196,140,.07);border-color:rgba(0,196,140,.2)}
+
+/* ─────────────────────────────────────────────────
+   SCORE COLOR HELPERS
+───────────────────────────────────────────────── */
+.sc100{color:#00c48c}.sc80{color:#1d6ce8}.sc60{color:#f0a500}.sc40{color:#e84040}.sc0{color:#3a4a6a}
+
+/* ─────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────── */
+@media(max-width:900px){
+  .today-layout{grid-template-columns:1fr}
+  .g2,.g3,.g4{grid-template-columns:1fr 1fr}
+  .week-days{grid-template-columns:repeat(4,1fr)}
+  .week-habit-breakdown{grid-template-columns:repeat(4,1fr)}
+  .month-stats-grid{grid-template-columns:repeat(3,1fr)}
+  .year-summary{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  main{padding:16px}
+  header{padding:14px 16px}
+  nav{padding:0 10px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .week-days{grid-template-columns:repeat(2,1fr)}
+  .week-habit-breakdown{grid-template-columns:repeat(2,1fr)}
+  .month-stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#1a2a4a;border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ANIS · 2025</div>
+  <div class="header-right">
+    <div class="streak-badge">🔥 <span id="streakVal">0</span> JOURS</div>
+    <button class="today-btn" onclick="goToday()">Aujourd'hui</button>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-tab active" onclick="showView('today',this)">📋 Aujourd'hui</button>
+  <button class="nav-tab" onclick="showView('week',this)">📆 Semaine</button>
+  <button class="nav-tab" onclick="showView('month',this)">🗓️ Mois</button>
+  <button class="nav-tab" onclick="showView('year',this)">📊 Année</button>
+  <button class="nav-tab" onclick="showView('bilans',this)">📈 Bilans</button>
+  <button class="nav-tab" onclick="showView('nutrition',this)">🥗 Nutrition</button>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════
+     TODAY
+══════════════════════════════════ -->
+<div class="view active" id="view-today">
+  <div class="page-title" id="todayTitle">—</div>
+  <div class="page-sub">Coche chaque habitude complétée. Valide ta journée en bas. Le score se calcule automatiquement.</div>
+
+  <div class="today-layout">
+    <div>
+      <div class="section-label">Habitudes du jour</div>
+      <div class="habit-list" id="habitList"></div>
+      <textarea class="notes-area" id="todayNotes" placeholder="Note du jour (humeur, contexte, observations...)"></textarea>
+      <button class="save-day-btn" onclick="saveToday()">✓ VALIDER MA JOURNÉE</button>
+    </div>
+    <div>
+      <div class="section-label">Score du jour</div>
+      <div class="card score-panel">
+        <div class="ring-wrap">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle class="ring-bg" cx="90" cy="90" r="76"/>
+            <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="76" stroke-dasharray="478" stroke-dashoffset="478"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-num" id="scoreNum">0</div>
+            <div class="ring-pct">/ 100</div>
+          </div>
+        </div>
+        <div class="score-grade" id="scoreGrade">EN ATTENTE</div>
+        <div class="score-msg" id="scoreMsg">Commence à cocher tes habitudes.</div>
+      </div>
+
+      <div class="section-label" style="margin-top:20px">Résumé semaine en cours</div>
+      <div class="card">
+        <div class="g2" style="margin-bottom:0">
+          <div><div class="stat-val" id="todWkAvg" style="font-size:32px">—</div><div class="stat-label">Moy. semaine</div></div>
+          <div><div class="stat-val" id="todWkStreak" style="font-size:32px;color:var(--gold)">0</div><div class="stat-label">🔥 Streak</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     WEEK
+══════════════════════════════════ -->
+<div class="view" id="view-week">
+  <div class="page-title">SEMAINE EN COURS</div>
+  <div class="page-sub">Vue des 7 jours. Clique sur un jour passé pour le modifier.</div>
+
+  <div class="week-days" id="weekDays"></div>
+
+  <div class="section-label">Performance par habitude cette semaine</div>
+  <div class="week-habit-breakdown" id="weekHabitBreak"></div>
+
+  <div class="section-label">Stats de la semaine</div>
+  <div class="g4" id="weekStats"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     MONTH
+══════════════════════════════════ -->
+<div class="view" id="view-month">
+  <div class="cal-header">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
+      <div class="cal-month-title" id="calMonthTitle">—</div>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
+    </div>
+  </div>
+
+  <div class="section-label">Stats du mois</div>
+  <div class="month-stats-grid" id="monthStats"></div>
+
+  <div class="section-label">Calendrier</div>
+  <div class="cal-grid" id="calGrid"></div>
+
+  <div class="section-label">Taux de réussite par habitude</div>
+  <div class="week-habit-breakdown" id="monthHabitBreak"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     YEAR
+══════════════════════════════════ -->
+<div class="view" id="view-year">
+  <div class="page-title">ANNÉE 2025</div>
+  <div class="page-sub">Chaque carré = un jour. Plus c'est bleu, mieux c'est. Passe la souris pour voir le score.</div>
+
+  <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:20px">
+    <div class="hm-day-labels">
+      <div class="hm-day-label">L</div>
+      <div class="hm-day-label">M</div>
+      <div class="hm-day-label">M</div>
+      <div class="hm-day-label">J</div>
+      <div class="hm-day-label">V</div>
+      <div class="hm-day-label">S</div>
+      <div class="hm-day-label">D</div>
+    </div>
+    <div style="flex:1;overflow:hidden">
+      <div class="hm-month-labels" id="hmMonthLabels"></div>
+      <div class="heatmap-wrap">
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-bottom:28px">
+    <span>💡</span><span>Légende : <span style="color:#0c1830">■</span> Non tracké &nbsp;|&nbsp; <span style="color:#0d2a5c">■</span> &lt;40 &nbsp;|&nbsp; <span style="color:#1247a0">■</span> 40–59 &nbsp;|&nbsp; <span style="color:#1d6ce8">■</span> 60–79 &nbsp;|&nbsp; <span style="color:#4d9fff">■</span> 80–99 &nbsp;|&nbsp; <span style="color:#00c48c">■</span> 100</span>
+  </div>
+
+  <div class="section-label">Bilan annuel</div>
+  <div class="year-summary" id="yearSummary"></div>
+
+  <div class="section-label" style="margin-top:28px">Performance annuelle par habitude</div>
+  <div class="week-habit-breakdown" id="yearHabitBreak"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     BILANS
+══════════════════════════════════ -->
+<div class="view" id="view-bilans">
+  <div class="page-title">BILANS & ANALYSES</div>
+  <div class="page-sub">Tes rapports de performance. Jour · Semaine · Mois · Année.</div>
+
+  <div class="bilan-period-nav">
+    <button class="bpn-btn active" onclick="showBilan('day',this)">📋 Bilan du jour</button>
+    <button class="bpn-btn" onclick="showBilan('week',this)">📆 Bilan semaine</button>
+    <button class="bpn-btn" onclick="showBilan('month',this)">🗓️ Bilan mois</button>
+    <button class="bpn-btn" onclick="showBilan('year',this)">📊 Bilan année</button>
+  </div>
+
+  <!-- BILAN JOUR -->
+  <div class="bilan-section active" id="bilan-day">
+    <div class="section-label">Aujourd'hui</div>
+    <div id="bilanDayContent"></div>
+  </div>
+
+  <!-- BILAN SEMAINE -->
+  <div class="bilan-section" id="bilan-week">
+    <div id="bilanWeekContent"></div>
+  </div>
+
+  <!-- BILAN MOIS -->
+  <div class="bilan-section" id="bilan-month">
+    <div id="bilanMonthContent"></div>
+  </div>
+
+  <!-- BILAN ANNEE -->
+  <div class="bilan-section" id="bilan-year">
+    <div id="bilanYearContent"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     NUTRITION
+══════════════════════════════════ -->
+<div class="view" id="view-nutrition">
+  <div class="page-title">TABLE NUTRITIONNELLE</div>
+  <div class="page-sub">Valeurs pour 100g (cru sauf indication). Sources disponibles en Algérie. Adapté à ton programme.</div>
+
+  <div class="callout gold">
+    <span>🎯</span>
+    <span>Tes objectifs : <strong style="color:var(--blue-l)">2400 kcal</strong> · <strong style="color:var(--blue-l)">180g protéines</strong> · <strong style="color:var(--gold)">240g glucides</strong> · <strong style="color:var(--green)">67g lipides</strong></span>
+  </div>
+
+  <input class="nutri-search" id="nutriSearch" placeholder="🔍 Rechercher un aliment..." oninput="filterNutri()">
+
+  <div class="nutri-filter">
+    <button class="nutri-btn active" onclick="filterCategory('all',this)">Tout</button>
+    <button class="nutri-btn" onclick="filterCategory('protein',this)">🥩 Protéines</button>
+    <button class="nutri-btn" onclick="filterCategory('carbs',this)">⚡ Glucides</button>
+    <button class="nutri-btn" onclick="filterCategory('fat',this)">🧈 Lipides</button>
+    <button class="nutri-btn" onclick="filterCategory('veg',this)">🥦 Légumes</button>
+    <button class="nutri-btn" onclick="filterCategory('fruit',this)">🍊 Fruits</button>
+    <button class="nutri-btn" onclick="filterCategory('dairy',this)">🥛 Laitiers</button>
+  </div>
+
+  <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#0c1525">
+    <table id="nutriTable">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Aliment</th>
+          <th>Portion</th>
+          <th><span class="macro-pill pill-p">Protéines</span></th>
+          <th><span class="macro-pill pill-c">Glucides</span></th>
+          <th><span class="macro-pill pill-f">Lipides</span></th>
+          <th><span class="macro-pill pill-k">Kcal</span></th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody id="nutriBody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main><!-- /main -->
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="mTitle">—</div>
+    <div class="modal-date" id="mDate">—</div>
+    <div class="modal-habits" id="mHabits"></div>
+    <textarea class="modal-notes" id="mNotes" placeholder="Note du jour..."></textarea>
+    <div class="modal-actions">
+      <button class="m-btn m-btn-save" onclick="saveModal()">ENREGISTRER</button>
+      <button class="m-btn m-btn-cancel" onclick="closeModal()">ANNULER</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">SAUVEGARDÉ ✓</div>
+
+<script>
+// ════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════
+const HABITS = [
+  {id:'fajr',    name:'Fajr à l\'heure',        icon:'🕌', sub:'Réveil avant Adhan · Woudou', pts:15, cat:'religion'},
+  {id:'dhuhr',   name:'Dhuhr à l\'heure',        icon:'🕌', sub:'Prière de mi-journée', pts:10, cat:'religion'},
+  {id:'asr',     name:'Asr à l\'heure',          icon:'🕌', sub:'Prière de l\'après-midi', pts:10, cat:'religion'},
+  {id:'maghrib', name:'Maghrib à l\'heure',      icon:'🕌', sub:'Prière du coucher du soleil', pts:10, cat:'religion'},
+  {id:'isha',    name:'Isha à l\'heure',         icon:'🕌', sub:'Prière de la nuit', pts:10, cat:'religion'},
+  {id:'adhkar',  name:'Adhkar matin + soir',     icon:'📿', sub:'Invocations après chaque prière', pts:8, cat:'religion'},
+  {id:'coran',   name:'Lecture Coran',           icon:'📖', sub:'Au moins quelques versets', pts:7, cat:'religion'},
+  {id:'sadaka',  name:'Sadaka du jour',          icon:'💰', sub:'Même symbolique chaque jour', pts:5, cat:'religion'},
+  {id:'famille', name:'Parents & famille',       icon:'👨‍👩‍👧', sub:'Parler bien · Obéir · Appeler', pts:5, cat:'religion'},
+  {id:'sport',   name:'Sport / Entraînement',   icon:'💪', sub:'Séance salle ou cardio', pts:10, cat:'sport'},
+  {id:'etire',   name:'Étirements & Posture',   icon:'🧘', sub:'15min · Lordose · Épaules · Cou', pts:5, cat:'sport'},
+  {id:'diet',    name:'Nutrition propre',        icon:'🥗', sub:'5 repas · Calories respectées', pts:8, cat:'sante'},
+  {id:'eau',     name:'2.5L d\'eau',             icon:'💧', sub:'Hydratation quotidienne', pts:5, cat:'sante'},
+  {id:'sleep',   name:'7h+ de sommeil',          icon:'😴', sub:'Coucher avant minuit', pts:7, cat:'sante'},
+  {id:'trading', name:'Analyse Trading',         icon:'📈', sub:'Lun-Ven · Journal de trades', pts:5, cat:'travail'},
+  {id:'lecture', name:'Lecture / Apprentissage', icon:'📚', sub:'30min minimum', pts:5, cat:'mental'},
+  {id:'detox',   name:'Pas de réseaux sociaux',  icon:'📵', sub:'Détox digitale complète', pts:5, cat:'mental'},
+];
+
+const TOTAL_PTS = HABITS.reduce((a,h)=>a+h.pts,0); // ~130
+
+const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MONTHS_SHORT = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+const DAYS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+// ════════════════════════════════════════
+//  STORAGE
+// ════════════════════════════════════════
+function key(date){
+  const d = date instanceof Date ? date : new Date(date+'T12:00:00');
+  return `anis_${d.getFullYear()}_${String(d.getMonth()+1).padStart(2,'0')}_${String(d.getDate()).padStart(2,'0')}`;
+}
+function load(date){ const r=localStorage.getItem(key(date)); return r?JSON.parse(r):null; }
+function save(date,data){ localStorage.setItem(key(date),JSON.stringify(data)); }
+
+function calcScore(habits){
+  if(!habits) return null;
+  const pts = HABITS.reduce((a,h)=>a+(habits[h.id]?h.pts:0),0);
+  return Math.round((pts/TOTAL_PTS)*100);
+}
+
+function scoreColor(s){
+  if(s===null) return '#1a2a4a';
+  if(s>=100) return '#00c48c';
+  if(s>=80)  return '#4d9fff';
+  if(s>=60)  return '#1d6ce8';
+  if(s>=40)  return '#f0a500';
+  return '#e84040';
+}
+function scoreGrade(s){
+  if(s===null||s===0) return 'EN ATTENTE';
+  if(s===100) return '🏆 PARFAIT';
+  if(s>=80)   return '⭐ EXCELLENT';
+  if(s>=60)   return '✅ SOLIDE';
+  if(s>=40)   return '⚡ PASSABLE';
+  return '❌ FAIBLE';
+}
+function scoreMsg(s){
+  if(!s) return 'Coche tes habitudes pour calculer ton score.';
+  if(s===100) return 'Journée parfaite. Rien à dire. Continue.';
+  if(s>=80)   return 'Très bonne journée. Tu avances sérieusement.';
+  if(s>=60)   return 'Bien, mais il reste de la marge. Identifie ce qui manque.';
+  if(s>=40)   return 'Journée moyenne. Demain recommence à zéro.';
+  return 'Journée difficile. Analyse pourquoi et rebondis.';
+}
+
+function getStreak(){
+  let streak=0, d=new Date();
+  while(true){
+    const data=load(d);
+    if(data && calcScore(data.habits)>0){ streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+// ════════════════════════════════════════
+//  TODAY
+// ════════════════════════════════════════
+let todayHabits={};
+let todayNoteVal='';
+
+function initToday(){
+  const today=new Date();
+  document.getElementById('todayTitle').textContent=
+    today.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+  document.getElementById('streakVal').textContent=getStreak();
+
+  const data=load(today);
+  todayHabits = data?{...data.habits}:{};
+  todayNoteVal = data?.note||'';
+  document.getElementById('todayNotes').value=todayNoteVal;
+
+  renderHabits();
+  updateScore();
+  updateTodaySidebar();
+}
+
+function renderHabits(){
+  const cats={religion:'☪️ Religion',sport:'💪 Sport',sante:'🏥 Santé',travail:'📈 Travail',mental:'🧠 Mental'};
+  const grouped={};
+  HABITS.forEach(h=>{ if(!grouped[h.cat]) grouped[h.cat]=[]; grouped[h.cat].push(h); });
+
+  let html='';
+  Object.entries(cats).forEach(([cat,label])=>{
+    if(!grouped[cat]) return;
+    html+=`<div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--gray);text-transform:uppercase;margin:14px 0 8px">${label}</div>`;
+    grouped[cat].forEach(h=>{
+      const done=!!todayHabits[h.id];
+      html+=`<div class="habit-item ${done?'done':''}" onclick="toggleHabit('${h.id}')">
+        <div class="hcheck">${done?'✓':''}</div>
+        <div class="hicon">${h.icon}</div>
+        <div class="hinfo"><div class="hname">${h.name}</div><div class="hsub">${h.sub}</div></div>
+        <div class="hpoints">+${h.pts}pts</div>
+      </div>`;
+    });
+  });
+  document.getElementById('habitList').innerHTML=html;
+}
+
+function toggleHabit(id){
+  todayHabits[id]=!todayHabits[id];
+  renderHabits();
+  updateScore();
+}
+
+function updateScore(){
+  const score=calcScore(todayHabits)||0;
+  const color=scoreColor(score);
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('scoreGrade').textContent=scoreGrade(score);
+  document.getElementById('scoreMsg').textContent=scoreMsg(score);
+  const circ=2*Math.PI*76;
+  document.getElementById('ringFill').style.strokeDashoffset=circ-(circ*score/100);
+  document.getElementById('ringFill').style.stroke=color;
+}
+
+function updateTodaySidebar(){
+  const today=new Date();
+  const dayOfWeek=(today.getDay()+6)%7;
+  const monday=new Date(today); monday.setDate(today.getDate()-dayOfWeek);
+  let scores=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    if(d>today) break;
+    const data=load(d);
+    const s=data?calcScore(data.habits):null;
+    if(s!==null) scores.push(s);
+  }
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  document.getElementById('todWkAvg').textContent=avg||'—';
+  document.getElementById('todWkStreak').textContent=getStreak();
+}
+
+function saveToday(){
+  const note=document.getElementById('todayNotes').value;
+  save(new Date(),{habits:todayHabits,note,ts:Date.now()});
+  document.getElementById('streakVal').textContent=getStreak();
+  updateTodaySidebar();
+  showToast('JOURNÉE SAUVEGARDÉE ✓');
+}
+
+// ════════════════════════════════════════
+//  WEEK
+// ════════════════════════════════════════
+function initWeek(){
+  const today=new Date();
+  const dow=(today.getDay()+6)%7;
+  const monday=new Date(today); monday.setDate(today.getDate()-dow);
+
+  // Days row
+  let dHtml='', scores=[], tracked=0;
+  let habitTotals={};
+  HABITS.forEach(h=>habitTotals[h.id]=0);
+
+  for(let i=0;i<7;i++){
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    const isToday=d.toDateString()===today.toDateString();
+    const isFuture=d>today;
+    const data=load(d);
+    const score=data?calcScore(data.habits):null;
+    if(score!==null){scores.push(score);tracked++;}
+    if(data) HABITS.forEach(h=>{if(data.habits[h.id])habitTotals[h.id]++;});
+
+    const color=score!==null?scoreColor(score):'#1a2a4a';
+    const dots=HABITS.map(h=>`<div class="cdot ${data&&data.habits[h.id]?'done':''}"></div>`).join('');
+
+    dHtml+=`<div class="week-day-card ${isToday?'today-card':''} ${isFuture?'':'pointer'}"
+      style="${isFuture?'opacity:.3;pointer-events:none':''}"
+      onclick="${!isFuture?`openModal('${d.toISOString().split('T')[0]}')`:''}"
+    >
+      <div class="wdc-name">${DAYS_FR[i]}<br><span style="font-size:9px">${d.getDate()}/${d.getMonth()+1}</span></div>
+      <div class="wdc-score" style="color:${color}">${score!==null?score:'—'}</div>
+      <div class="wdc-bar"><div class="wdc-bar-fill" style="width:${score||0}%;background:${color}"></div></div>
+      <div class="wdc-dots">${dots}</div>
+    </div>`;
+  }
+  document.getElementById('weekDays').innerHTML=dHtml;
+
+  // Habit breakdown
+  let hHtml='';
+  HABITS.forEach(h=>{
+    const rate=tracked>0?Math.round((habitTotals[h.id]/tracked)*100):0;
+    hHtml+=`<div class="whb-card">
+      <div class="whb-icon">${h.icon}</div>
+      <div class="whb-name" style="font-size:10px">${h.name}</div>
+      <div class="whb-rate">${rate}%</div>
+      <div class="whb-bar"><div class="whb-fill" style="width:${rate}%;background:${rate>=80?'var(--green)':rate>=50?'var(--blue)':'var(--gold)'}"></div></div>
+    </div>`;
+  });
+  document.getElementById('weekHabitBreak').innerHTML=hHtml;
+  document.getElementById('weekHabitBreak').style.gridTemplateColumns=`repeat(${Math.min(HABITS.length,9)},1fr)`;
+
+  // Stats
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const best=scores.length?Math.max(...scores):0;
+  const perfect=scores.filter(s=>s===100).length;
+  document.getElementById('weekStats').innerHTML=`
+    <div class="card"><div class="stat-val">${avg||'—'}</div><div class="stat-label">Score moyen</div></div>
+    <div class="card"><div class="stat-val gold">${best||'—'}</div><div class="stat-label">Meilleur jour</div></div>
+    <div class="card"><div class="stat-val">${tracked}/7</div><div class="stat-label">Jours trackés</div></div>
+    <div class="card"><div class="stat-val green">${perfect}</div><div class="stat-label">Jours parfaits</div></div>
+  `;
+}
+
+// ════════════════════════════════════════
+//  MONTH
+// ════════════════════════════════════════
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+function initMonth(){
+  document.getElementById('calMonthTitle').textContent=MONTHS[calMonth].toUpperCase()+' '+calYear;
+  const today=new Date();
+  const firstDay=new Date(calYear,calMonth,1);
+  const lastDay=new Date(calYear,calMonth+1,0);
+  const startOff=(firstDay.getDay()+6)%7;
+
+  let scores=[],tracked=0;
+  let habitTotals={};
+  HABITS.forEach(h=>habitTotals[h.id]=0);
+
+  // Gather data
+  for(let d=1;d<=lastDay.getDate();d++){
+    const date=new Date(calYear,calMonth,d);
+    const data=load(date);
+    const s=data?calcScore(data.habits):null;
+    if(s!==null){scores.push(s);tracked++;}
+    if(data) HABITS.forEach(h=>{if(data.habits[h.id])habitTotals[h.id]++;});
+  }
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const best=scores.length?Math.max(...scores):0;
+  const perfect=scores.filter(s=>s===100).length;
+  const streak=getStreak();
+
+  document.getElementById('monthStats').innerHTML=`
+    <div class="card"><div class="stat-val">${avg||'—'}</div><div class="stat-label">Score moyen</div></div>
+    <div class="card"><div class="stat-val gold">${best||'—'}</div><div class="stat-label">Meilleur jour</div></div>
+    <div class="card"><div class="stat-val">${tracked}/${lastDay.getDate()}</div><div class="stat-label">Jours trackés</div></div>
+    <div class="card"><div class="stat-val green">${perfect}</div><div class="stat-label">Jours parfaits</div></div>
+    <div class="card"><div class="stat-val" style="color:var(--gold)">🔥${streak}</div><div class="stat-label">Streak actuel</div></div>
+  `;
+
+  // Calendar grid
+  let cHtml=DAYS_FR.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<startOff;i++) cHtml+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=lastDay.getDate();d++){
+    const date=new Date(calYear,calMonth,d);
+    const isToday=date.toDateString()===today.toDateString();
+    const isFuture=date>today;
+    const data=load(date);
+    const s=data?calcScore(data.habits):null;
+    const color=s!==null?scoreColor(s):'';
+    const dots=HABITS.map(h=>`<div class="cdot ${data&&data.habits[h.id]?'done':''}"></div>`).join('');
+    const dateStr=date.toISOString().split('T')[0];
+    cHtml+=`<div class="cal-day ${isToday?'today':''} ${isFuture?'future':''}"
+      onclick="${!isFuture?`openModal('${dateStr}')`:''}"
+    >
+      ${s!==null?`<div class="cal-score-glow" style="background:${color}"></div>`:''}
+      <div class="cal-day-num">${d}</div>
+      <div class="cal-day-score" style="color:${s!==null?color:'#1a2a4a'}">${s!==null?s:''}</div>
+      <div class="cal-day-dots">${dots}</div>
+    </div>`;
+  }
+  document.getElementById('calGrid').innerHTML=cHtml;
+
+  // Habit breakdown
+  let hHtml='';
+  HABITS.forEach(h=>{
+    const rate=tracked>0?Math.round((habitTotals[h.id]/tracked)*100):0;
+    hHtml+=`<div class="whb-card">
+      <div class="whb-icon">${h.icon}</div>
+      <div class="whb-name" style="font-size:10px">${h.name}</div>
+      <div class="whb-rate">${rate}%</div>
+      <div class="whb-bar"><div class="whb-fill" style="width:${rate}%;background:${rate>=80?'var(--green)':rate>=50?'var(--blue)':'var(--gold)'}"></div></div>
+    </div>`;
+  });
+  document.getElementById('monthHabitBreak').innerHTML=hHtml;
+  document.getElementById('monthHabitBreak').style.gridTemplateColumns=`repeat(${Math.min(HABITS.length,9)},1fr)`;
+}
+
+function changeMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  initMonth();
+}
+
+// ════════════════════════════════════════
+//  YEAR HEATMAP
+// ════════════════════════════════════════
+function initYear(){
+  const year=2025;
+  const today=new Date();
+  const startOfYear=new Date(year,0,1);
+  const startDow=(startOfYear.getDay()+6)%7; // Mon=0
+
+  const heatmap=document.getElementById('heatmap');
+  heatmap.innerHTML='';
+
+  let scores=[],tracked=0,perfect=0,total=0;
+  let habitTotals={};
+  HABITS.forEach(h=>habitTotals[h.id]=0);
+
+  // Build cells: col=week, row=day
+  // We render by iterating day by day for the whole year
+  const cells=[];
+  // Pad start
+  for(let i=0;i<startDow;i++) cells.push({empty:true});
+
+  const endOfYear=new Date(year,11,31);
+  for(let d=new Date(year,0,1);d<=endOfYear;d.setDate(d.getDate()+1)){
+    const date=new Date(d);
+    const isFuture=date>today;
+    const data=load(date);
+    const s=data?calcScore(data.habits):null;
+    if(s!==null){scores.push(s);tracked++;if(s===100)perfect++;total+=s;}
+    if(data) HABITS.forEach(h=>{if(data.habits[h.id])habitTotals[h.id]++;});
+    cells.push({date:new Date(date),s,isFuture,empty:false});
+  }
+
+  // Pad end to complete last week
+  while(cells.length%7!==0) cells.push({empty:true});
+
+  // Render: heatmap is grid-auto-flow:column, rows=7
+  // So we need to output cells in order
+  cells.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='hm-cell';
+    if(c.empty){
+      el.style.background='transparent';
+      el.style.pointerEvents='none';
+    } else {
+      let bg='#0c1830';
+      if(!c.isFuture && c.s!==null){
+        if(c.s===100)      bg='#00c48c';
+        else if(c.s>=80)   bg='#4d9fff';
+        else if(c.s>=60)   bg='#1d6ce8';
+        else if(c.s>=40)   bg='#1247a0';
+        else               bg='#0d2a5c';
+      }
+      el.style.background=bg;
+      if(c.date) el.title=`${c.date.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}${c.s!==null?' — '+c.s+'/100':''}`;
+      if(!c.isFuture){
+        el.style.cursor='pointer';
+        el.onclick=()=>openModal(c.date.toISOString().split('T')[0]);
+      }
+    }
+    heatmap.appendChild(el);
+  });
+
+  // Month labels
+  const labelsEl=document.getElementById('hmMonthLabels');
+  labelsEl.innerHTML='';
+  // Calculate approximate position of each month
+  const colW=17; // 14px cell + 3px gap
+  for(let m=0;m<12;m++){
+    const d=new Date(year,m,1);
+    const dayOfYear=Math.floor((d-startOfYear)/86400000);
+    const col=Math.floor((dayOfYear+startDow)/7);
+    const div=document.createElement('div');
+    div.className='hm-month-label';
+    div.style.width=colW*4+'px';
+    div.style.marginLeft=m===0?col*colW+'px':'0';
+    div.textContent=MONTHS_SHORT[m].toUpperCase();
+    labelsEl.appendChild(div);
+  }
+
+  // Summary
+  const avg=tracked?Math.round(total/tracked):0;
+  document.getElementById('yearSummary').innerHTML=`
+    <div class="card"><div class="stat-val">${tracked}</div><div class="stat-label">Jours trackés</div></div>
+    <div class="card"><div class="stat-val gold">${avg||'—'}</div><div class="stat-label">Score moyen</div></div>
+    <div class="card"><div class="stat-val green">${perfect}</div><div class="stat-label">Jours parfaits</div></div>
+    <div class="card"><div class="stat-val" style="color:var(--gold)">🔥${getStreak()}</div><div class="stat-label">Streak actuel</div></div>
+  `;
+
+  // Year habit breakdown
+  let hHtml='';
+  HABITS.forEach(h=>{
+    const rate=tracked>0?Math.round((habitTotals[h.id]/tracked)*100):0;
+    hHtml+=`<div class="whb-card">
+      <div class="whb-icon">${h.icon}</div>
+      <div class="whb-name" style="font-size:10px">${h.name}</div>
+      <div class="whb-rate">${rate}%</div>
+      <div class="whb-bar"><div class="whb-fill" style="width:${rate}%;background:${rate>=80?'var(--green)':rate>=50?'var(--blue)':'var(--gold)'}"></div></div>
+    </div>`;
+  });
+  document.getElementById('yearHabitBreak').innerHTML=hHtml;
+  document.getElementById('yearHabitBreak').style.gridTemplateColumns=`repeat(${Math.min(HABITS.length,9)},1fr)`;
+}
+
+// ════════════════════════════════════════
+//  BILANS
+// ════════════════════════════════════════
+function initBilans(){
+  renderBilanDay();
+  renderBilanWeek();
+  renderBilanMonth();
+  renderBilanYear();
+}
+
+function renderBilanDay(){
+  const today=new Date();
+  const data=load(today);
+  const score=data?calcScore(data.habits):0;
+  const color=scoreColor(score);
+  const done=HABITS.filter(h=>data&&data.habits[h.id]);
+  const missed=HABITS.filter(h=>!data||!data.habits[h.id]);
+
+  document.getElementById('bilanDayContent').innerHTML=`
+    <div class="g2">
+      <div class="card" style="text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:80px;color:${color};line-height:1">${score}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:${color}">${scoreGrade(score)}</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:8px">${scoreMsg(score)}</div>
+      </div>
+      <div class="card">
+        <div class="section-label">Habitudes complétées (${done.length}/${HABITS.length})</div>
+        ${done.map(h=>`<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #0f1e38"><span>${h.icon}</span><span style="font-size:13px;color:var(--green)">${h.name}</span><span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green)">+${h.pts}</span></div>`).join('')}
+        ${missed.length?`<div class="section-label" style="margin-top:12px">Manquées (${missed.length})</div>
+        ${missed.map(h=>`<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #0f1e38"><span>${h.icon}</span><span style="font-size:13px;color:var(--red)">${h.name}</span></div>`).join('')}`:''}
+      </div>
+    </div>
+    ${data?.note?`<div class="callout"><span>📝</span><span>${data.note}</span></div>`:''}
+  `;
+}
+
+function renderBilanWeek(){
+  const today=new Date();
+  const dow=(today.getDay()+6)%7;
+  const monday=new Date(today); monday.setDate(today.getDate()-dow);
+  let rows='',scores=[],tracked=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    const isFuture=d>today;
+    const data=load(d);
+    const s=data?calcScore(data.habits):null;
+    if(s!==null){scores.push(s);tracked++;}
+    const color=s!==null?scoreColor(s):'#1a2a4a';
+    const done=data?HABITS.filter(h=>data.habits[h.id]).length:0;
+    rows+=`<tr>
+      <td><strong>${DAYS_FR[i]} ${d.getDate()}/${d.getMonth()+1}</strong></td>
+      <td style="color:${color};font-family:'Bebas Neue',sans-serif;font-size:22px">${s!==null?s:isFuture?'—':'—'}</td>
+      <td><span style="color:${color}">${s!==null?scoreGrade(s):'Non tracké'}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${s!==null?`${done}/${HABITS.length}`:''}</td>
+      <td>${data?.note?`<span style="font-size:12px;color:var(--gray)">${data.note.substring(0,40)}...</span>`:''}</td>
+    </tr>`;
+  }
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const best=scores.length?Math.max(...scores):0;
+  document.getElementById('bilanWeekContent').innerHTML=`
+    <div class="g4" style="margin-bottom:20px">
+      <div class="card"><div class="stat-val">${avg||'—'}</div><div class="stat-label">Moy. semaine</div></div>
+      <div class="card"><div class="stat-val gold">${best||'—'}</div><div class="stat-label">Meilleur</div></div>
+      <div class="card"><div class="stat-val">${tracked}/7</div><div class="stat-label">Jours trackés</div></div>
+      <div class="card"><div class="stat-val green">${getStreak()}</div><div class="stat-label">🔥 Streak</div></div>
+    </div>
+    <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#0c1525">
+      <table><thead><tr><th>Jour</th><th>Score</th><th>Grade</th><th>Habitudes</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+  `;
+}
+
+function renderBilanMonth(){
+  const year=new Date().getFullYear(), month=new Date().getMonth();
+  const lastDay=new Date(year,month+1,0).getDate();
+  let scores=[],tracked=0,perfect=0;
+  let habitTotals={}; HABITS.forEach(h=>habitTotals[h.id]=0);
+  let rows='';
+  for(let d=1;d<=lastDay;d++){
+    const date=new Date(year,month,d);
+    if(date>new Date()) break;
+    const data=load(date);
+    const s=data?calcScore(data.habits):null;
+    if(s!==null){scores.push(s);tracked++;if(s===100)perfect++;}
+    if(data) HABITS.forEach(h=>{if(data.habits[h.id])habitTotals[h.id]++;});
+    if(s!==null){
+      const color=scoreColor(s);
+      rows+=`<tr>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${d} ${MONTHS_SHORT[month]}</td>
+        <td style="color:${color};font-family:'Bebas Neue',sans-serif;font-size:20px">${s}</td>
+        <td style="color:${color};font-size:12px">${scoreGrade(s)}</td>
+        <td style="font-size:12px;color:var(--gray)">${data?.note?data.note.substring(0,35)+'...':''}</td>
+      </tr>`;
+    }
+  }
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const best=scores.length?Math.max(...scores):0;
+
+  // Best + worst habit
+  const habitRates=HABITS.map(h=>({...h,rate:tracked>0?Math.round((habitTotals[h.id]/tracked)*100):0}));
+  habitRates.sort((a,b)=>b.rate-a.rate);
+  const bestH=habitRates[0],worstH=habitRates[habitRates.length-1];
+
+  document.getElementById('bilanMonthContent').innerHTML=`
+    <div class="g4" style="margin-bottom:20px">
+      <div class="card"><div class="stat-val">${avg||'—'}</div><div class="stat-label">Score moyen</div></div>
+      <div class="card"><div class="stat-val gold">${best||'—'}</div><div class="stat-label">Meilleur jour</div></div>
+      <div class="card"><div class="stat-val">${tracked}/${lastDay}</div><div class="stat-label">Jours trackés</div></div>
+      <div class="card"><div class="stat-val green">${perfect}</div><div class="stat-label">Jours parfaits</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:20px">
+      <div class="callout green"><span>🏆</span><span>Meilleure habitude du mois : <strong>${bestH?.icon} ${bestH?.name}</strong> — ${bestH?.rate}% de réussite</span></div>
+      <div class="callout" style="border-color:rgba(232,64,64,.3);background:rgba(232,64,64,.07)"><span>⚠️</span><span>Habitude à travailler : <strong>${worstH?.icon} ${worstH?.name}</strong> — ${worstH?.rate}% seulement</span></div>
+    </div>
+    <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#0c1525">
+      <table><thead><tr><th>Date</th><th>Score</th><th>Grade</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+  `;
+}
+
+function renderBilanYear(){
+  const year=2025, today=new Date();
+  let scores=[],tracked=0,perfect=0,total=0;
+  let habitTotals={};HABITS.forEach(h=>habitTotals[h.id]=0);
+  let monthAvgs=[];
+  for(let m=0;m<12;m++){
+    const lastD=new Date(year,m+1,0).getDate();
+    let mScores=[];
+    for(let d=1;d<=lastD;d++){
+      const date=new Date(year,m,d);
+      if(date>today) break;
+      const data=load(date);
+      const s=data?calcScore(data.habits):null;
+      if(s!==null){scores.push(s);tracked++;if(s===100)perfect++;total+=s;mScores.push(s);}
+      if(data) HABITS.forEach(h=>{if(data.habits[h.id])habitTotals[h.id]++;});
+    }
+    if(mScores.length) monthAvgs.push({month:m,avg:Math.round(mScores.reduce((a,b)=>a+b,0)/mScores.length),days:mScores.length});
+  }
+  const avg=tracked?Math.round(total/tracked):0;
+  const best=scores.length?Math.max(...scores):0;
+
+  const habitRates=HABITS.map(h=>({...h,rate:tracked>0?Math.round((habitTotals[h.id]/tracked)*100):0}));
+  habitRates.sort((a,b)=>b.rate-a.rate);
+
+  let monthRows=monthAvgs.map(m=>{
+    const color=scoreColor(m.avg);
+    return `<tr>
+      <td><strong>${MONTHS[m.month]}</strong></td>
+      <td style="color:${color};font-family:'Bebas Neue',sans-serif;font-size:20px">${m.avg}</td>
+      <td style="color:${color};font-size:12px">${scoreGrade(m.avg)}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${m.days} jours</td>
+    </tr>`;
+  }).join('');
+
+  let habitRows=habitRates.map(h=>{
+    const color=h.rate>=80?'var(--green)':h.rate>=50?'var(--blue-l)':'var(--gold)';
+    return `<tr>
+      <td>${h.icon} ${h.name}</td>
+      <td style="color:${color};font-family:'Bebas Neue',sans-serif;font-size:20px">${h.rate}%</td>
+      <td><div style="height:6px;background:#0f1e38;border-radius:3px;overflow:hidden;min-width:80px"><div style="height:100%;background:${color};width:${h.rate}%;border-radius:3px"></div></div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('bilanYearContent').innerHTML=`
+    <div class="g4" style="margin-bottom:24px">
+      <div class="card"><div class="stat-val">${tracked}</div><div class="stat-label">Jours trackés</div></div>
+      <div class="card"><div class="stat-val gold">${avg||'—'}</div><div class="stat-label">Score moyen</div></div>
+      <div class="card"><div class="stat-val green">${perfect}</div><div class="stat-label">Jours parfaits</div></div>
+      <div class="card"><div class="stat-val" style="color:var(--gold)">🔥${getStreak()}</div><div class="stat-label">Streak actuel</div></div>
+    </div>
+    <div class="g2">
+      <div>
+        <div class="section-label">Bilan par mois</div>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#0c1525">
+          <table><thead><tr><th>Mois</th><th>Score moyen</th><th>Grade</th><th>Jours</th></tr></thead><tbody>${monthRows||'<tr><td colspan=4 style="color:var(--gray);text-align:center;padding:20px">Aucune donnée encore</td></tr>'}</tbody></table>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">Classement des habitudes</div>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);background:#0c1525">
+          <table><thead><tr><th>Habitude</th><th>Taux</th><th>Barre</th></tr></thead><tbody>${habitRows}</tbody></table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showBilan(period, btn){
+  document.querySelectorAll('.bilan-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bpn-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('bilan-'+period).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ════════════════════════════════════════
+//  NUTRITION TABLE
+// ════════════════════════════════════════
+const NUTRI=[
+  // PROTEINS
+  {cat:'protein',icon:'🐔',name:'Poulet (blanc) cru',portion:'100g cru',p:23,c:0,f:2.5,k:120,note:'Meilleure source protéine Algérie'},
+  {cat:'protein',icon:'🐔',name:'Poulet (blanc) cuit',portion:'100g cuit',p:31,c:0,f:3,k:165,note:'Perd ~35% eau à la cuisson'},
+  {cat:'protein',icon:'🐔',name:'Poulet (cuisse) cru',portion:'100g cru',p:18,c:0,f:9,k:160,note:'Plus de lipides que le blanc'},
+  {cat:'protein',icon:'🥩',name:'Bœuf haché (5% MG)',portion:'100g cru',p:21,c:0,f:5,k:130,note:'Bon rapport qualité/prix'},
+  {cat:'protein',icon:'🥩',name:'Bœuf haché (15% MG)',portion:'100g cru',p:17,c:0,f:15,k:210,note:'Kefta classique'},
+  {cat:'protein',icon:'🥩',name:'Agneau (épaule) cru',portion:'100g cru',p:18,c:0,f:16,k:220,note:'Riche en fer et zinc'},
+  {cat:'protein',icon:'🐟',name:'Thon en boîte (au naturel)',portion:'100g égoutté',p:26,c:0,f:1,k:116,note:'Protéine ultra pratique'},
+  {cat:'protein',icon:'🐟',name:'Sardines fraîches crues',portion:'100g',p:21,c:0,f:11,k:190,note:'Oméga-3 → bonne pour acné'},
+  {cat:'protein',icon:'🥚',name:'Œuf entier',portion:'1 œuf (60g)',p:7,c:0.5,f:5,k:78,note:'Blanc=protéine, jaune=lipides'},
+  {cat:'protein',icon:'🥚',name:'Blancs d\'œuf',portion:'100g (≈3 blancs)',p:11,c:0.7,f:0.2,k:52,note:'Protéine pure, zéro lipide'},
+  {cat:'protein',icon:'🥛',name:'Yaourt nature (entier)',portion:'125g (1 pot)',p:5,c:6,f:4,k:80,note:'Probiotiques → anti-acné'},
+  {cat:'protein',icon:'🧀',name:'Fromage frais / Jben',portion:'100g',p:14,c:3,f:8,k:140,note:'Disponible artisanal en Algérie'},
+  // CARBS
+  {cat:'carbs',icon:'🍚',name:'Riz blanc cru',portion:'100g cru',p:7,c:79,f:0.5,k:350,note:'Donne ~300g cuit (×3)'},
+  {cat:'carbs',icon:'🍚',name:'Riz blanc cuit',portion:'100g cuit',p:2.5,c:26,f:0.3,k:130,note:'Référence post-training'},
+  {cat:'carbs',icon:'🌾',name:'Semoule (couscous) crue',portion:'100g crue',p:12,c:72,f:1,k:360,note:'Donne ~250g cuite (×2.5)'},
+  {cat:'carbs',icon:'🌾',name:'Semoule (couscous) cuite',portion:'100g cuite',p:5,c:29,f:0.5,k:140,note:'Couscous du vendredi ✓'},
+  {cat:'carbs',icon:'🍝',name:'Pâtes sèches',portion:'100g sec',p:13,c:75,f:1.5,k:350,note:'Donne ~250g cuites (×2.5)'},
+  {cat:'carbs',icon:'🍝',name:'Pâtes cuites',portion:'100g cuites',p:5,c:30,f:0.6,k:157,note:'Index glycémique modéré'},
+  {cat:'carbs',icon:'🥙',name:'Pain blanc (baguette)',portion:'100g',p:8,c:55,f:1,k:265,note:'IG élevé — modérer'},
+  {cat:'carbs',icon:'🟤',name:'Lentilles crues',portion:'100g crues',p:25,c:60,f:1,k:350,note:'Donne ~250g cuites'},
+  {cat:'carbs',icon:'🟤',name:'Lentilles cuites',portion:'100g cuites',p:9,c:20,f:0.4,k:116,note:'Protéines + glucides lents'},
+  {cat:'carbs',icon:'🫘',name:'Pois chiches crus',portion:'100g crus',p:19,c:61,f:6,k:378,note:'Donne ~250g cuits'},
+  {cat:'carbs',icon:'🫘',name:'Pois chiches cuits',portion:'100g cuits',p:7,c:22,f:2.5,k:164,note:'Idéal dîner + rassasiant'},
+  {cat:'carbs',icon:'🍌',name:'Banane',portion:'1 banane moy. (120g)',p:1.5,c:27,f:0.5,k:107,note:'Pré-training idéale'},
+  {cat:'carbs',icon:'📅',name:'Dattes (Deglet)',portion:'3 dattes (30g)',p:0.6,c:22,f:0,k:84,note:'Sucre rapide pré-training'},
+  // FAT
+  {cat:'fat',icon:'🫒',name:'Huile d\'olive',portion:'1 càs (10ml)',p:0,c:0,f:9,k:88,note:'Gras sain — priorité'},
+  {cat:'fat',icon:'🥚',name:'Jaune d\'œuf',portion:'1 jaune (17g)',p:2.7,c:0.6,f:5,k:55,note:'Riche en vit D et zinc'},
+  // VEG
+  {cat:'veg',icon:'🍅',name:'Tomate',portion:'100g',p:0.9,c:3.9,f:0.2,k:18,note:'Lycopène anti-oxydant'},
+  {cat:'veg',icon:'🥒',name:'Courgette',portion:'100g',p:1.2,c:3.1,f:0.3,k:17,note:'Très peu calorique'},
+  {cat:'veg',icon:'🥕',name:'Carotte',portion:'100g',p:0.9,c:10,f:0.2,k:41,note:'Vitamine A — bonne pour peau'},
+  {cat:'veg',icon:'🧅',name:'Oignon',portion:'100g',p:1.1,c:9.3,f:0.1,k:40,note:'Base de tout plat algérien'},
+  {cat:'veg',icon:'🥬',name:'Épinards (crus)',portion:'100g',p:2.9,c:3.6,f:0.4,k:23,note:'Fer + magnésium'},
+  {cat:'veg',icon:'🫑',name:'Poivron rouge',portion:'100g',p:1,c:7,f:0.3,k:31,note:'Vitamine C ×3 vs orange'},
+  // FRUITS
+  {cat:'fruit',icon:'🍊',name:'Orange',portion:'1 moyenne (150g)',p:1.5,c:17,f:0.2,k:70,note:'Vitamine C → peau nette'},
+  {cat:'fruit',icon:'🍎',name:'Pomme',portion:'1 moyenne (150g)',p:0.4,c:20,f:0.3,k:78,note:'Fibres + satiété'},
+  {cat:'fruit',icon:'🍋',name:'Citron',portion:'jus 1 citron (30ml)',p:0.2,c:2.5,f:0,k:9,note:'Assaisonnement + digestion'},
+  // DAIRY
+  {cat:'dairy',icon:'🥛',name:'Lait entier',portion:'250ml (1 verre)',p:8,c:12,f:8,k:150,note:'Modérer → possible acné'},
+  {cat:'dairy',icon:'🧈',name:'Beurre',portion:'1 càs (10g)',p:0.1,c:0,f:8,k:74,note:'Limiter — lipides saturés'},
+];
+
+let nutriCat='all';
+
+function renderNutri(data){
+  const tbody=document.getElementById('nutriBody');
+  tbody.innerHTML=data.map(f=>`<tr>
+    <td><span class="nutri-icon">${f.icon}</span></td>
+    <td><strong>${f.name}</strong></td>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray)">${f.portion}</td>
+    <td><span class="macro-pill pill-p">${f.p}g</span></td>
+    <td><span class="macro-pill pill-c">${f.c}g</span></td>
+    <td><span class="macro-pill pill-f">${f.f}g</span></td>
+    <td><span class="macro-pill pill-k">${f.k}</span></td>
+    <td style="font-size:12px;color:var(--gray)">${f.note}</td>
+  </tr>`).join('');
+}
+
+function filterCategory(cat, btn){
+  nutriCat=cat;
+  document.querySelectorAll('.nutri-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function filterNutri(){ applyFilters(); }
+
+function applyFilters(){
+  const q=document.getElementById('nutriSearch').value.toLowerCase();
+  let data=NUTRI;
+  if(nutriCat!=='all') data=data.filter(f=>f.cat===nutriCat);
+  if(q) data=data.filter(f=>f.name.toLowerCase().includes(q)||f.note.toLowerCase().includes(q));
+  renderNutri(data);
+}
+
+// ════════════════════════════════════════
+//  MODAL (edit past day)
+// ════════════════════════════════════════
+let mDate=null, mHabits={};
+
+function openModal(dateStr){
+  const date=new Date(dateStr+'T12:00:00');
+  const isToday=date.toDateString()===new Date().toDateString();
+  mDate=date;
+  const data=load(date);
+  mHabits=data?{...data.habits}:{};
+  document.getElementById('mTitle').textContent=isToday?'AUJOURD\'HUI':date.toLocaleDateString('fr-FR',{weekday:'long'}).toUpperCase();
+  document.getElementById('mDate').textContent=date.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+  document.getElementById('mNotes').value=data?.note||'';
+  renderModalHabits();
+  document.getElementById('modalBg').classList.add('open');
+}
+
+function renderModalHabits(){
+  document.getElementById('mHabits').innerHTML=HABITS.map(h=>`
+    <div class="m-habit ${mHabits[h.id]?'done':''}" onclick="toggleMHabit('${h.id}')">
+      <div class="m-check">${mHabits[h.id]?'✓':''}</div>
+      <span style="font-size:18px">${h.icon}</span>
+      <div>
+        <div style="font-size:13px;font-weight:600">${h.name}</div>
+        <div style="font-size:11px;color:var(--gray)">${h.sub}</div>
+      </div>
+      <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue-l)">+${h.pts}</span>
+    </div>`).join('');
+}
+
+function toggleMHabit(id){ mHabits[id]=!mHabits[id]; renderModalHabits(); }
+
+function saveModal(){
+  if(!mDate) return;
+  save(mDate,{habits:mHabits,note:document.getElementById('mNotes').value,ts:Date.now()});
+  closeModal();
+  showToast('SAUVEGARDÉ ✓');
+  // Refresh current view
+  const activeView=document.querySelector('.view.active').id.replace('view-','');
+  if(activeView==='week') initWeek();
+  if(activeView==='month') initMonth();
+  if(activeView==='year') initYear();
+  if(activeView==='bilans') initBilans();
+}
+
+function closeModal(e){
+  if(e && e.target!==document.getElementById('modalBg')) return;
+  document.getElementById('modalBg').classList.remove('open');
+}
+
+// ════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════
+function showView(name, btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='today') initToday();
+  if(name==='week') initWeek();
+  if(name==='month'){calMonth=new Date().getMonth();calYear=new Date().getFullYear();initMonth();}
+  if(name==='year') initYear();
+  if(name==='bilans') initBilans();
+  if(name==='nutrition') renderNutri(NUTRI);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goToday(){
+  showView('today', document.querySelector('.nav-tab'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab')[0].classList.add('active');
+}
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+initToday();
+renderNutri(NUTRI);
+</script>
+</body>
+</html>
